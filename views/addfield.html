@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Movie</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <form action="/addfield" method="post">
+        <div>
+          <label for="fname">Field Name</label>
+          <input
+            type="text"
+            id="fname"
+            name="fieldname"
+            placeholder="Field Name.."
+          /><br /><br />
+        </div>
+
+        <div>
+          <label for="ftype">Field Type</label>
+          <input
+            type="text"
+            id="ftype"
+            name="fieldtype"
+            placeholder="Field Type.."
+          /><br /><br />
+        </div>
+
+        <div>
+          <input type="radio" name="required" value="required" checked />
+          Required
+          <input type="radio" name="required" value="optional" />
+          Optional<br /><br />
+        </div>
+
+        <div>
+          <label for="defaultvalue">Default Value</label>
+          <input
+            type="text"
+            id="defaultvalue"
+            name="defaultvalue"
+            placeholder="Default Value.."
+          /><br /><br />
+        </div>
+
+        <input type="submit" value="Submit" />
+      </form>
+    </div>
+  </body>
+</html>

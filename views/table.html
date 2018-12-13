@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Form Table</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  </head>
+  <style>
+    table,
+    th,
+    td {
+      border: 1px solid black;
+      border-collapse: collapse;
+    }
+  </style>
+  <body>
+    <div class="container">
+      <table id="formtable" style="width:50%"></table>
+      <br /><br />
+      <a href="/logout">Logout</a>
+    </div>
+  </body>
+  <script>
+    $(document).ready(() => {
+      var token = "";
+      axios
+        .get("http://localhost:3000/gettoken")
+        .then(function(response) {
+          console.log(response.data.token);
+          token = response.data.token;
+
+          axios
+            .get("http://localhost:3000/formfield", {
+              headers: { Authorization: "Bearer " + token }
+            })
+            .then(function(response) {
+              console.log(response);
+              var result = response.data;
+              console.log(result);
+              var inputHtml = "";
+              inputHtml += "<tr>";
+              for (var i in result[0]) {
+                if (i !== "_id" && i !== "__v") {
+                  inputHtml += "<th>" + i + "</th>";
+                }
+              }
+              inputHtml += "</tr>";
+              for (var i = 0; i < result.length; i++) {
+                inputHtml += "<tr>";
+                for (var j in result[i]) {
+                  if (j !== "_id" && j !== "__v") {
+                    inputHtml += "<td>" + result[i][j] + "</td>";
+                  }
+                }
+                inputHtml += "</tr>";
+              }
+
+              $("#formtable").html(inputHtml);
+            })
+            .catch(function(error) {
+              console.log(error);
+            });
+        })
+        .catch(function(error) {
+          console.log(error);
+        });
+    });
+  </script>
+</html>

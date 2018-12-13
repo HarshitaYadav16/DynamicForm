@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Movie List</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  </head>
+  <style>
+    .close {
+      right: 32px;
+      top: 32px;
+      width: 32px;
+      height: 32px;
+      opacity: 0.3;
+    }
+    .close:hover {
+      opacity: 1;
+    }
+    .close:before,
+    .close:after {
+      position: absolute;
+      left: 290px;
+      content: " ";
+      height: 22px;
+      width: 2px;
+      background-color: #333;
+    }
+    .close:before {
+      transform: rotate(45deg);
+    }
+    .close:after {
+      transform: rotate(-45deg);
+    }
+  </style>
+  <body>
+    <div class="container">
+      <h3>Form Creation</h3>
+      <div>
+        <div id="newField"></div>
+        <button class="add"><a href="/fieldadded">Submit</a></button
+        ><br /><br />
+      </div>
+      <button class="add"><a href="/addfieldpage">Add Field</a></button
+      ><br /><br />
+    </div>
+  </body>
+  <script>
+    $(document).ready(() => {
+      var token = "";
+      axios
+        .get("http://localhost:3000/gettoken")
+        .then(function(response) {
+          console.log(response.data.token);
+          token = response.data.token;
+
+          axios
+            .get("http://localhost:3000/newfield", {
+              headers: { Authorization: "Bearer " + token }
+            })
+            .then(function(response) {
+              console.log(response);
+              var result = response.data;
+              console.log(result);
+              var inputHtml = "";
+              for (var i = 0; i < result.length; i++) {
+                inputHtml +=
+                  result[i].fieldname +
+                  ': <input type="' +
+                  result[i].fieldtype +
+                  '" name="' +
+                  result[i].fieldname +
+                  '" value="' +
+                  result[i].defaultvalue +
+                  '" ' +
+                  result[i].required +
+                  '><a href="/deleteField/' +
+                  result[i]._id +
+                  '" class="close"></a><br><br>';
+              }
+
+              $("#newField").html(inputHtml);
+            })
+            .catch(function(error) {
+              console.log(error);
+            });
+        })
+        .catch(function(error) {
+          console.log(error);
+        });
+    });
+  </script>
+</html>
