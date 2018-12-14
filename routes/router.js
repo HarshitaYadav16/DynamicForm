@@ -9,14 +9,14 @@ const path = require("path");
 const jwt = require("jsonwebtoken");
 const moment = require("moment");
 const ensureToken = require("../middleware/ensuretoken");
-//const axios = require("axios");
+const promise = require("promise");
 
-//POST route for new user registration
+//POST route for new user registration and login
 /**
- * @api {post} /register Registration of new user
- * @apiName Register
+ * @api {post} /register Registration of new user and login
+ * @apiName register
  * @apiGroup User
- * @apiSuccess {JSON} JWT of the registered user
+ * @apiSuccess {JSON} JWT of the registered user and redirection to home page after login
  * @apiError 400 Bad Request Error All fields are required to be filled by the user Auth failed.
  */
 router.post("/register", (req, res, next) => {
@@ -69,20 +69,16 @@ router.post("/register", (req, res, next) => {
             {
               userlogin
             },
-            "my_secret_key",
+            process.env.SECRET_OR_KEY,
             {
               expiresIn: "24h" // expires in 24 hours
             }
           );
-          //console.log(token);
-          //   res.json({
-          //     token: token
-          //   });
+
+          console.log(token);
           req.session.token = token;
-          console.log(req.session.token);
           req.session.userId = user._id;
-          req.session.username = user.username;
-          console.log("Login user " + req.session.username);
+
           if (user.username == "admin") {
             return res.redirect("/homepage");
           } else {
@@ -100,17 +96,14 @@ router.post("/register", (req, res, next) => {
   }
 });
 
-router.get("/gettoken", (req, res, next) => {
-  console.log("token " + req.session.token);
-  res.json({
-    token: req.session.token
-  });
-});
-
-router.get("/fieldadded", (req, res, next) => {
-  res.send("form submitted" + "<br><a href='/logout'>Logout</a>");
-});
-
+//POST route to add new field in the form
+/**
+ * @api {post} /addfield Adding new field in the form
+ * @apiName addfield
+ * @apiGroup Field
+ * @apiSuccess  Redirection to home page
+ * @apiError Error
+ */
 router.post("/addfield", (req, res, next) => {
   const fieldData = {
     fieldname: req.body.fieldname,
@@ -119,8 +112,6 @@ router.post("/addfield", (req, res, next) => {
     defaultvalue: req.body.defaultvalue
   };
 
-  console.log(fieldData);
-
   Input.create(fieldData, (error, input) => {
     if (error) {
       return next(error);
@@ -128,25 +119,25 @@ router.post("/addfield", (req, res, next) => {
       return res.redirect("/homepage");
     }
   });
-
-  //res.send("Field added");
-  //return res.redirect("/homepage");
 });
 
+//POST route to add new field in the form
+/**
+ * @api {post} /addnewfield Posts form data in db
+ * @apiName addnewfield
+ * @apiGroup Field
+ * @apiSuccess  Redirection to a table which shows form data
+ * @apiError Sends the error
+ */
 router.post("/addnewfield", (req, res, next) => {
-  //console.log(req.body);
   let result = req.body;
-  //console.log(result);
+
   for (var i in result) {
-    console.log(i); // alerts key
-    console.log(result[i]); //alerts key's value
-    console.log(typeof result[i]);
     if (isNaN(result[i])) {
     } else {
       result[i] = parseInt(result[i]);
     }
   }
-
   Field.create(result, (error, input) => {
     if (error) {
       return next(error);
@@ -156,6 +147,29 @@ router.post("/addnewfield", (req, res, next) => {
   });
 });
 
+//GET route to get JWT token
+/**
+ * @api {get} /gettoken to get JWT token
+ * @apiName gettoken
+ * @apiSuccess {JSON} sends JWT token
+ */
+router.get("/gettoken", (req, res, next) => {
+  res.json({
+    token: req.session.token
+  });
+});
+
+//GET route to get all fields in for the form
+/**
+ * @api {GET} /newfield Get all fields in the form
+ * @apiName newfield
+ * @apiGroup Input
+ * @apiSuccess {String} name of the field
+ * @apiSuccess {String} type of the field
+ * @apiSuccess {String} required or optional
+ * @apiSuccess {String} default value
+ * @apiError Sends the error
+ */
 router.get("/newfield", ensureToken, (req, res, next) => {
   Input.find((err, data) => {
     if (err) res.send(err);
@@ -163,6 +177,17 @@ router.get("/newfield", ensureToken, (req, res, next) => {
   });
 });
 
+//GET route to delete user according to ID
+/**
+ * @api {get} /user Gets users information
+ * @apiName user
+ * @apiGroup User
+ * @apiSuccess {String} get user name
+ * @apiSuccess {String} get user email id
+ * @apiSuccess {String} get user username
+ * @apiSuccess {String} get user hashed password
+ * @apiError Sends the error
+ */
 router.get("/user", ensureToken, (req, res, next) => {
   User.find((err, data) => {
     if (err) res.send(err);
@@ -170,6 +195,14 @@ router.get("/user", ensureToken, (req, res, next) => {
   });
 });
 
+//GET route to delete user according to ID
+/**
+ * @api {get} /formfield Gets type of fields to create form
+ * @apiName formfield
+ * @apiGroup Field
+ * @apiSuccess {String} get dynamic form data
+ * @apiError Sends the error
+ */
 router.get("/formfield", ensureToken, (req, res, next) => {
   Field.find((err, data) => {
     if (err) res.send(err);
@@ -177,7 +210,7 @@ router.get("/formfield", ensureToken, (req, res, next) => {
   });
 });
 
-//GET route to get movie details
+//GET route to redirect to home page
 /**
  * @api {get} /homepage redirects to homepage of application
  * @apiName homepage
@@ -186,30 +219,79 @@ router.get("/homepage", (req, res, next) => {
   return res.sendFile(path.join(__dirname + "/../views/homepage.html"));
 });
 
+//GET route to redirect to add field page
+/**
+ * @api {get} /addfieldpage redirects to page where you can add a new field in the dynamic form
+ * @apiName addfieldpage
+ */
 router.get("/addfieldpage", (req, res, next) => {
   return res.sendFile(path.join(__dirname + "/../views/addfield.html"));
 });
 
+//GET route to redirect to form table page
+/**
+ * @api {get} /tablepage redirects to page displaying dynamic form data in table format
+ * @apiName tablepage
+ */
 router.get("/tablepage", (req, res, next) => {
   return res.sendFile(path.join(__dirname + "/../views/table.html"));
 });
 
-//DELETE route to delete user according to ID
+//GET route to redirect to user form page
 /**
- * @api {delete} /deleteMovie/:id Deletes movie information
- * @apiName deleteMovie
- * @apiGroup Movie
- * @apiParam {Number} id Movie unique ID.
- * @apiSuccess {String} delete movie movie name
- * @apiSuccess {String} delete actors All actors of the movie
- * @apiSuccess {String} delete director director of the movie
- * @apiSuccess {String} delete producer producer of the movie
- * @apiSuccess {Date} delete released_date released date of the movie
- * @apiSuccess {Number} delete budget budget of the movie
+ * @api {get} /userform redirects to page where form is displayed for user to fillup
+ * @apiName userform
+ */
+router.get("/userform", (req, res, next) => {
+  return res.sendFile(path.join(__dirname + "/../views/userform.html"));
+});
+
+//GET route to delete all documents of the dynamic form
+/**
+ * @api {get} /fieldadded Deletes movie information
+ * @apiName fieldadded
+ * @apiGroup Field
+ * @apiSuccess {String} delete all documents in form
+ * @apiError Sends the error
+ */
+router.get("/fieldadded", (req, res, next) => {
+  Field.deleteMany({}, (err, data) => {
+    if (err) res.send(err);
+    else {
+      res.send("form submitted" + "<br><a href='/logout'>Logout</a>");
+    }
+  });
+});
+
+//GET route to delete all fields of the form
+/**
+ * @api {get} /clearinputfields Deletes all fields of the form
+ * @apiName clearinputfields
+ * @apiGroup Input
+ * @apiSuccess {String} deletes all fields of the form
+ * @apiError Sends the error
+ */
+router.get("/clearinputfields", (req, res, next) => {
+  Input.deleteMany({}, (err, data) => {
+    if (err) res.send(err);
+    else {
+      res.redirect("/homepage");
+    }
+  });
+});
+
+//GET route to delete single field document according to ID
+/**
+ * @api {delete} /deleteField/:id Deletes single field document
+ * @apiName deleteField
+ * @apiGroup Input
+ * @apiSuccess {String} delete field name
+ * @apiSuccess {String} delete field type
+ * @apiSuccess {String} delete required or optional
+ * @apiSuccess {String} delete default value of field
  * @apiError Sends the error
  */
 router.get("/deleteField/:id", (req, res) => {
-  console.log(req.params.id);
   Input.findOneAndRemove(
     {
       _id: req.params.id
@@ -217,7 +299,6 @@ router.get("/deleteField/:id", (req, res) => {
     (err, data) => {
       if (err) res.send(err);
       else {
-        console.log(data);
         return res.redirect("/homepage");
       }
     }
@@ -228,7 +309,6 @@ router.get("/deleteField/:id", (req, res) => {
 /**
  * @api {get} /logout Destroys session and returns to login page
  * @apiName logout
- * @apiGroup Movie
  * @apiSuccess {String} redirects to login page
  * @apiError Sends the error
  */
@@ -244,15 +324,5 @@ router.get("/logout", (req, res, next) => {
     });
   }
 });
-
-// Make a request for a user with a given ID
-// axios
-//   .get("/getinputdetails")
-//   .then(function(response) {
-//     console.log(response);
-//   })
-//   .catch(function(error) {
-//     console.log(error);
-//   });
 
 module.exports = router;

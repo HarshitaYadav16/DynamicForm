@@ -17,6 +17,8 @@
   </style>
   <body>
     <div class="container">
+      <h3>Form Table</h3>
+      <a href="/userform">Fill again</a><br /><br />
       <table id="formtable" style="width:50%"></table>
       <br /><br />
       <a href="/logout">Logout</a>
@@ -28,7 +30,6 @@
       axios
         .get("http://localhost:3000/gettoken")
         .then(function(response) {
-          console.log(response.data.token);
           token = response.data.token;
 
           axios
@@ -38,7 +39,6 @@
             .then(function(response) {
               console.log(response);
               var result = response.data;
-              console.log(result);
               var inputHtml = "";
               inputHtml += "<tr>";
               for (var i in result[0]) {

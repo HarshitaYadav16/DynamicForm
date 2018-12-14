@@ -65,5 +65,5 @@ app.use((err, req, res, next) => {
 //process.env["PORT"] = "8000";
 // listen on port 3000
 app.listen(process.env.PORT, () => {
-  console.log("Express app listening on port 3000");
+  console.log("Express app listening on port " + process.env.PORT);
 });

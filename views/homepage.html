@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Movie List</title>
+    <title>Form Creation</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
@@ -43,6 +43,8 @@
         ><br /><br />
       </div>
       <button class="add"><a href="/addfieldpage">Add Field</a></button
+      >&nbsp;&nbsp;<button class="add">
+        <a href="/clearinputfields">Clear All Field</a></button
       ><br /><br />
     </div>
   </body>
@@ -52,7 +54,6 @@
       axios
         .get("http://localhost:3000/gettoken")
         .then(function(response) {
-          console.log(response.data.token);
           token = response.data.token;
 
           axios
@@ -62,7 +63,6 @@
             .then(function(response) {
               console.log(response);
               var result = response.data;
-              console.log(result);
               var inputHtml = "";
               for (var i = 0; i < result.length; i++) {
                 inputHtml +=
