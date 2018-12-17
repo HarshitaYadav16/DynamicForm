@@ -40,20 +40,44 @@
               console.log(response);
               var result = response.data;
               var inputHtml = "";
+              var arr = [];
+              for (var i = 0; i < result.length; i++) {
+                for (var j in result[i]) {
+                  arr.push(j);
+                }
+              }
+              var uniqueNames = [];
+              $.each(arr, function(i, el) {
+                if ($.inArray(el, uniqueNames) === -1) uniqueNames.push(el);
+              });
+              console.log(arr);
+              console.log(uniqueNames);
               inputHtml += "<tr>";
-              for (var i in result[0]) {
+              uniqueNames.forEach(i => {
                 if (i !== "_id" && i !== "__v") {
                   inputHtml += "<th>" + i + "</th>";
                 }
-              }
+              });
               inputHtml += "</tr>";
               for (var i = 0; i < result.length; i++) {
                 inputHtml += "<tr>";
-                for (var j in result[i]) {
-                  if (j !== "_id" && j !== "__v") {
-                    inputHtml += "<td>" + result[i][j] + "</td>";
+                console.log(result[i]);
+
+                uniqueNames.forEach(key => {
+                  var a = 1;
+                  for (var j in result[i]) {
+                    if (key == "_id" || key == "__v") {
+                      a = 0;
+                    } else if (j == key) {
+                      inputHtml += "<td>" + result[i][j] + "</td>";
+                      a = 0;
+                    }
                   }
-                }
+                  if (a == 1) {
+                    inputHtml += "<td></td>";
+                  }
+                });
+
                 inputHtml += "</tr>";
               }
 

@@ -75,7 +75,6 @@ router.post("/register", (req, res, next) => {
             }
           );
 
-          console.log(token);
           req.session.token = token;
           req.session.userId = user._id;
 
@@ -131,13 +130,25 @@ router.post("/addfield", (req, res, next) => {
  */
 router.post("/addnewfield", (req, res, next) => {
   let result = req.body;
+  let arr = [];
 
   for (var i in result) {
+    let obj = {};
     if (isNaN(result[i])) {
+      obj = {
+        name: i,
+        value: result[i]
+      };
     } else {
       result[i] = parseInt(result[i]);
+      obj = {
+        name: i,
+        value: result[i]
+      };
     }
+    arr.push(obj);
   }
+  form = { formvlaue: arr };
   Field.create(result, (error, input) => {
     if (error) {
       return next(error);
@@ -246,6 +257,10 @@ router.get("/userform", (req, res, next) => {
   return res.sendFile(path.join(__dirname + "/../views/userform.html"));
 });
 
+router.get("/fieldadded", (req, res, next) => {
+  res.send("form submitted" + "<br><a href='/logout'>Logout</a>");
+});
+
 //GET route to delete all documents of the dynamic form
 /**
  * @api {get} /fieldadded Deletes movie information
@@ -254,11 +269,11 @@ router.get("/userform", (req, res, next) => {
  * @apiSuccess {String} delete all documents in form
  * @apiError Sends the error
  */
-router.get("/fieldadded", (req, res, next) => {
+router.get("/deleteallfields", (req, res, next) => {
   Field.deleteMany({}, (err, data) => {
     if (err) res.send(err);
     else {
-      res.send("form submitted" + "<br><a href='/logout'>Logout</a>");
+      res.send("");
     }
   });
 });
