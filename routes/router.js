@@ -130,25 +130,14 @@ router.post("/addfield", (req, res, next) => {
  */
 router.post("/addnewfield", (req, res, next) => {
   let result = req.body;
-  let arr = [];
 
   for (var i in result) {
-    let obj = {};
     if (isNaN(result[i])) {
-      obj = {
-        name: i,
-        value: result[i]
-      };
     } else {
       result[i] = parseInt(result[i]);
-      obj = {
-        name: i,
-        value: result[i]
-      };
     }
-    arr.push(obj);
   }
-  form = { formvlaue: arr };
+
   Field.create(result, (error, input) => {
     if (error) {
       return next(error);
