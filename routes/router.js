@@ -130,14 +130,12 @@ router.post("/addfield", (req, res, next) => {
  */
 router.post("/addnewfield", (req, res, next) => {
   let result = req.body;
-
   for (var i in result) {
     if (isNaN(result[i])) {
     } else {
       result[i] = parseInt(result[i]);
     }
   }
-
   Field.create(result, (error, input) => {
     if (error) {
       return next(error);
@@ -208,6 +206,32 @@ router.get("/formfield", ensureToken, (req, res, next) => {
     if (err) res.send(err);
     else return res.send(data);
   });
+});
+
+router.get("/check", ensureToken, (req, res, next) => {
+  Field.aggregate(
+    [
+      { $project: { o: { $objectToArray: "$$ROOT" } } },
+      { $unwind: "$o" },
+      { $group: { _id: null, keys: { $addToSet: "$o.k" } } }
+
+      // {
+      //   $project: {
+      //     formvalue: {
+      //       $map: {
+      //         input: "$keys",
+      //         as: "doc",
+      //         in: { k: "$$doc", v: {} }
+      //       }
+      //     }
+      //   }
+      // }
+    ],
+    (err, data) => {
+      if (err) res.send(err);
+      else return res.send(data);
+    }
+  );
 });
 
 //GET route to redirect to home page
@@ -304,6 +328,31 @@ router.get("/deleteField/:id", (req, res) => {
       if (err) res.send(err);
       else {
         return res.redirect("/homepage");
+      }
+    }
+  );
+});
+
+//GET route to delete single field document according to ID
+/**
+ * @api {delete} /deleteField/:id Deletes single field document
+ * @apiName deleteField
+ * @apiGroup Input
+ * @apiSuccess {String} delete field name
+ * @apiSuccess {String} delete field type
+ * @apiSuccess {String} delete required or optional
+ * @apiSuccess {String} delete default value of field
+ * @apiError Sends the error
+ */
+router.get("/deleterow/:id", (req, res) => {
+  Field.findOneAndRemove(
+    {
+      _id: req.params.id
+    },
+    (err, data) => {
+      if (err) res.send(err);
+      else {
+        return res.redirect("/tablepage");
       }
     }
   );
