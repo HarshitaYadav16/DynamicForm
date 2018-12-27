@@ -8,44 +8,34 @@
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
   </head>
   <style>
-    table,
-    th,
-    td {
+    div.table {
+      display: table;
+    }
+    form.tr,
+    div.tr {
+      display: table-row;
+    }
+    span.td,
+    span.th {
+      display: table-cell;
       border: 1px solid black;
-      border-collapse: collapse;
     }
-    .close {
-      right: 32px;
-      top: 32px;
-      width: 32px;
-      height: 32px;
-      opacity: 0.3;
+    span.th {
+      font-weight: bold;
     }
-    .close:hover {
-      opacity: 1;
-    }
-    .close:before,
-    .close:after {
-      position: absolute;
-      left: 618px;
-      content: " ";
-      height: 22px;
-      width: 2px;
-      background-color: #333;
-      margin-top: -10px;
-    }
-    .close:before {
-      transform: rotate(45deg);
-    }
-    .close:after {
-      transform: rotate(-45deg);
+    input {
+      width: 100px;
     }
   </style>
+
   <body>
     <div class="container">
       <h3>Form Table</h3>
       <a href="/userform">Fill again</a><br /><br />
-      <table id="formtable" style="width:50%"></table>
+      <div class="table" id="formtable"></div>
+      <br /><br />
+      <h3>Report</h3>
+      <div id="report"></div>
       <br /><br />
       <a href="/logout">Logout</a>
     </div>
@@ -78,15 +68,19 @@
               });
               console.log(arr);
               console.log(uniqueNames);
-              inputHtml += "<tr>";
+              inputHtml += '<div class="tr">';
               uniqueNames.forEach(i => {
                 if (i !== "_id" && i !== "__v") {
-                  inputHtml += "<th>" + i + "</th>";
+                  inputHtml += '<span class="th">' + i + "</span>";
                 }
               });
-              inputHtml += "<th>Close</th></tr>";
+              inputHtml +=
+                '<span class="th">Update</span><span class="th">Close</span></div>';
               for (var i = 0; i < result.length; i++) {
-                inputHtml += "<tr>";
+                inputHtml +=
+                  '<form class="tr" method="post" action="updaterow/' +
+                  result[i]._id +
+                  '">';
                 console.log(result[i]);
 
                 uniqueNames.forEach(key => {
@@ -95,22 +89,82 @@
                     if (key == "_id" || key == "__v") {
                       a = 0;
                     } else if (j == key) {
-                      inputHtml += "<td>" + result[i][j] + "</td>";
+                      inputHtml +=
+                        '<span class="td"><input type="text" name="' +
+                        key +
+                        '" value= "' +
+                        result[i][j] +
+                        '"/></span>';
+                      // inputHtml +=
+                      //   "<td><input type='text' name= '" +
+                      //   key +
+                      //   "' value= '" +
+                      //   result[i][j] +
+                      //   "' ></td>";
                       a = 0;
                     }
                   }
                   if (a == 1) {
-                    inputHtml += "<td></td>";
+                    inputHtml +=
+                      '<span class="td"><input type="text"/ name="' +
+                      key +
+                      '" value =""></span>';
+                    // inputHtml +=
+                    //   "<td><input type='text' name= '" +
+                    //   key +
+                    //   "' value= ''></td>";
                   }
                 });
                 console.log(result[i]._id);
                 inputHtml +=
-                  "<td><a href='/deleterow/" +
+                  '<span class="td"><input type="submit" value="Update" /></span>' +
+                  '<span class="td"><a href="/deleterow/' +
                   result[i]._id +
-                  "' class='close'></a></td></tr>";
+                  '" >Delete</a></span></form>';
+
+                // inputHtml +=
+                //   "<td><a href='/updaterow/" +
+                //   result[i]._id +
+                //   "' class='update'>Update</a></td>" +
+                //   "<td></td></form>";
+
+                //inputHtml += "</form>";
+              }
+              // inputHtml +=
+              //   '<button class="add"><a href="/addfieldpage">Add Field</a></button>';
+              //console.log(inputHtml);
+              $("#formtable").html(inputHtml);
+            })
+            .catch(function(error) {
+              console.log(error);
+            });
+        })
+        .catch(function(error) {
+          console.log(error);
+        });
+
+      axios
+        .get("http://localhost:3000/gettoken")
+        .then(function(response) {
+          token = response.data.token;
+
+          axios
+            .get("http://localhost:3000/report", {
+              headers: { Authorization: "Bearer " + token }
+            })
+            .then(function(response) {
+              console.log(response);
+              var result = response.data;
+              var inputHtml = "";
+              for (var i = 0; i < result.length; i++) {
+                inputHtml += result[i]._id + " : " + result[i].count + "<br>";
+                result[i].people.forEach(value => {
+                  inputHtml += "<span>" + value + "</span>&nbsp";
+                });
+                inputHtml += "<br><br>";
               }
 
-              $("#formtable").html(inputHtml);
+              $("#report").html(inputHtml);
             })
             .catch(function(error) {
               console.log(error);

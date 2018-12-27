@@ -145,6 +145,26 @@ router.post("/addnewfield", (req, res, next) => {
   });
 });
 
+router.post("/updaterow/:id", (req, res, next) => {
+  Field.findOneAndUpdate(
+    {
+      _id: req.params.id
+    },
+    {
+      $set: req.body
+    },
+    {
+      upsert: true
+    },
+    (err, data) => {
+      if (err) res.send(err);
+      else {
+        console.log(data);
+        res.redirect("/tablepage");
+      }
+    }
+  );
+});
 //GET route to get JWT token
 /**
  * @api {get} /gettoken to get JWT token
@@ -208,24 +228,30 @@ router.get("/formfield", ensureToken, (req, res, next) => {
   });
 });
 
+router.get("/report", ensureToken, (req, res, next) => {
+  Field.aggregate(
+    [
+      {
+        $group: {
+          _id: "$Location",
+          people: { $push: "$Name" },
+          count: { $sum: 1 }
+        }
+      }
+    ],
+    (err, data) => {
+      if (err) res.send(err);
+      else return res.send(data);
+    }
+  );
+});
+
 router.get("/check", ensureToken, (req, res, next) => {
   Field.aggregate(
     [
       { $project: { o: { $objectToArray: "$$ROOT" } } },
       { $unwind: "$o" },
       { $group: { _id: null, keys: { $addToSet: "$o.k" } } }
-
-      // {
-      //   $project: {
-      //     formvalue: {
-      //       $map: {
-      //         input: "$keys",
-      //         as: "doc",
-      //         in: { k: "$$doc", v: {} }
-      //       }
-      //     }
-      //   }
-      // }
     ],
     (err, data) => {
       if (err) res.send(err);
